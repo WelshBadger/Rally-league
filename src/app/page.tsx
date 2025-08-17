@@ -37,7 +37,7 @@ export default function Home() {
             
             <div className="flex justify-between items-center p-4 bg-gradient-to-r from-orange-600 to-orange-500 rounded-lg shadow-lg">
               <div>
-                <span className="text-xl font-bold">🥉 3. Noel O'Sullivan</span>
+                <span className="text-xl font-bold">🥉 3. Noel O Sullivan</span>
                 <p className="text-sm opacity-90">with Osian Pryce</p>
               </div>
               <span className="text-3xl font-bold">32 pts</span>
@@ -46,26 +46,4 @@ export default function Home() {
           </div>
           
           <div className="mt-8 p-6 bg-gray-700 rounded-lg">
-            <h3 className="text-xl font-bold mb-4 text-green-400">
-              🏆 Rally League Database Achievement
-            </h3>
-            <p className="text-green-400 mb-2">
-              ✅ 19 UK and Ireland rallies stored in Supabase
-            </p>
-            <p className="text-green-400 mb-2">
-              ✅ Co-drivers database populated with career data
-            </p>
-            <p className="text-green-400 mb-2">
-              ✅ BRC, IRC, WRC, SRC championships covered
-            </p>
-            <p className="text-yellow-400">
-              🔄 Ready for live database connection
-            </p>
-          </div>
-          
-        </div>
-        
-      </div>
-    </div>
-  )
-}
+            <h3 className="text-xl font-bold mb-4 text-green
