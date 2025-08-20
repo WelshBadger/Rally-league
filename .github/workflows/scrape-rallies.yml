@@ -1,0 +1,27 @@
+name: Rally League Automatic Scraping
+
+on:
+  schedule:
+    # Runs every Monday at 9 AM UTC (10 AM BST)
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  scrape-rallies:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Scrape Rally Results
+      run: |
+        echo "🤖 Starting Rally League automatic scraping..."
+        curl -X GET "https://super-duper-parakeet-97qg7gwjvxwfx6qp-3000.app.github.dev/api/scrape-rallies" \
+
+             -H "Content-Type: application/json" \
+             --max-time 300 \
+             --retry 3 \
+             --retry-delay 10
+        echo "✅ Rally League scraping completed!"
+        
+    - name: Log Results
+      run: |
+        echo "Rally League automatic scraping ran at $(date)"
