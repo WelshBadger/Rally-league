@@ -11,7 +11,7 @@ export default function CoDriverRankings() {
     setTimeout(() => {
       setIsLoading(false)
       setShowUpdate(true)
-      alert('🏆 RALLY LEAGUE SUCCESS!\n\nRallies: 8\nResults: 7\n\nAutomation working!')
+      alert('Rally League Success! 8 Rallies, 7 Results, Automation Working!')
     }, 1500)
   }
 
@@ -24,7 +24,7 @@ export default function CoDriverRankings() {
         </Link>
         
         <h1 className="text-5xl font-bold text-blue-500 mb-4 text-center">Co-Driver Championship</h1>
-        <p className="text-xl text-gray-300 mb-8 text-center">World's First Automatic Co-Driver Rankings</p>
+        <p className="text-xl text-gray-300 mb-8 text-center">World First Automatic Co-Driver Rankings</p>
 
         <div className="text-center mb-8">
           <button
@@ -46,13 +46,13 @@ export default function CoDriverRankings() {
         {showUpdate && (
           <div className="bg-green-800 rounded-lg p-6 text-center">
             <h3 className="text-2xl font-bold mb-4">Latest Update</h3>
-            <p className="text-green-200">8 Rallies Processed • 7 Results Found • 100% Automated</p>
+            <p className="text-green-200">8 Rallies Processed - 7 Results Found - 100% Automated</p>
           </div>
         )}
 
         <div className="bg-gray-800 rounded-lg p-6 text-center">
           <h3 className="text-2xl font-bold mb-4">System Status</h3>
-          <p className="text-green-500 text-xl font-bold">LIVE • READY • 8 Rallies • 67 Max Points</p>
+          <p className="text-green-500 text-xl font-bold">LIVE - READY - 8 Rallies - 67 Max Points</p>
         </div>
       </div>
     </div>
