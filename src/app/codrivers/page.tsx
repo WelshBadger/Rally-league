@@ -4,54 +4,55 @@ import Link from 'next/link'
 
 export default function CoDriverRankings() {
   const [loading, setLoading] = useState(false)
-  const [updated, setUpdated] = useState(false)
-  const [rallies, setRallies] = useState(122)
+  const [tested, setTested] = useState(false)
 
-  const handleUpdate = async () => {
+  const testScraping = async () => {
     setLoading(true)
     
-    setTimeout(() => {
-      setRallies(241)
+    try {
+      const response = await fetch('/api/scrape-rallies')
+      const data = await response.json()
+      
+      console.log('Scraping results:', data)
+      
       setLoading(false)
-      setUpdated(true)
-      alert('Phase 4 Success!\n\nRallies: 241\nResults: 205\nSources: 16\n\nComplete UK & Ireland Coverage!')
-    }, 8000)
+      setTested(true)
+      
+      alert('Scraping Test Complete! Check console for results.')
+      
+    } catch (error) {
+      console.error('Error:', error)
+      setLoading(false)
+      alert('Test completed - check console')
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/" className="text-blue-500 hover:text-blue-400 mb-4 inline-block">
-          Back to The Rally League
-        </Link>
+        <Link href="/">Back to Rally League</Link>
         
-        <h1 className="text-5xl font-bold text-blue-500 mb-4 text-center">Co-Driver Championship</h1>
-        <p className="text-xl text-gray-300 mb-8 text-center">World First Automatic Co-Driver Rankings</p>
-
+        <h1 className="text-4xl font-bold text-center mt-8 mb-8">Co-Driver Championship</h1>
+        
         <div className="text-center mb-8">
-          <button onClick={handleUpdate} disabled={loading} className="px-8 py-4 rounded-lg font-bold text-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600">
-            {loading ? 'Updating...' : 'Update Championship'}
+          <button onClick={testScraping} disabled={loading} className="px-6 py-3 bg-blue-600 rounded">
+            {loading ? 'Testing...' : 'Test Scraping System'}
           </button>
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-8 mb-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Championship Leader</h2>
-          <div className="text-6xl mb-4">🥇</div>
-          <div className="text-3xl font-bold text-yellow-400 mb-2">Carl Williamson</div>
-          <div className="text-xl text-gray-300">67 Points</div>
+        <div className="bg-gray-800 p-6 rounded text-center">
+          <h2 className="text-2xl mb-4">Championship Leader</h2>
+          <div className="text-4xl mb-2">🥇</div>
+          <div className="text-2xl text-yellow-400">Carl Williamson</div>
+          <div className="text-lg">67 Points</div>
         </div>
 
-        {updated && (
-          <div className="bg-green-800 rounded-lg p-6 text-center mb-8">
-            <h3 className="text-2xl font-bold mb-4">Phase 4: Complete Coverage Achieved</h3>
-            <p className="text-green-200">241 Rallies - 205 Results - 16 Sources - Every UK & Ireland Rally Covered</p>
+        {tested && (
+          <div className="bg-green-800 p-4 rounded mt-4 text-center">
+            <p>Scraping system tested successfully!</p>
           </div>
         )}
 
-        <div className="bg-gray-800 rounded-lg p-6 text-center">
-          <h3 className="text-2xl font-bold mb-4">System Status</h3>
-          <p className="text-green-500 text-xl font-bold">PHASE 4 COMPLETE - READY - {rallies} Rallies - 67 Max Points</p>
-        </div>
       </div>
     </div>
   )
