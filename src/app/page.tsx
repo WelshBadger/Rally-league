@@ -1,130 +1,127 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<string>('drivers')
+
+  const staticDrivers = [
+    { rank: 1, name: "Matt Edwards", points: 89, rallies: 4, championships: "BRC, Welsh" },
+    { rank: 2, name: "William Creighton", points: 82, rallies: 5, championships: "Irish Tarmac" },
+    { rank: 3, name: "Garry Pearson", points: 76, rallies: 4, championships: "SRC, BRC" },
+    { rank: 4, name: "Tom Cave", points: 71, rallies: 3, championships: "BRC" },
+    { rank: 5, name: "Ruairi Bell", points: 68, rallies: 4, championships: "Irish Forest" }
+  ]
+
+  const staticCoDrivers = [
+    { rank: 1, name: "Carl Williamson", points: 89, rallies: 4, championships: "BRC, Welsh" },
+    { rank: 2, name: "Liam Regan", points: 82, rallies: 5, championships: "Irish Tarmac" },
+    { rank: 3, name: "Dale Bowen", points: 76, rallies: 4, championships: "SRC, BRC" },
+    { rank: 4, name: "James Morgan", points: 71, rallies: 3, championships: "BRC" },
+    { rank: 5, name: "Gareth Sayers", points: 68, rallies: 4, championships: "Irish Forest" }
+  ]
+
+  const currentData = activeTab === 'drivers' ? staticDrivers : staticCoDrivers
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-red-500 mb-4">
-            THE RALLY LEAGUE
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800 py-8">
+        <div className="max-w-6xl mx-auto px-8 text-center">
+          <h1 className="text-6xl font-bold mb-4">
+            <span className="text-red-500">The Rally</span> <span className="text-blue-500">League</span>
           </h1>
-          <p className="text-2xl text-gray-300 mb-2">
-            World's First Automatic Championship Platform
-          </p>
-          <p className="text-lg text-gray-400">
-            Real-time rankings • Automatic updates • Complete UK & Ireland coverage
-          </p>
-        </div>
-
-        {/* Main Navigation Cards */}
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 mb-12">
+          <p className="text-2xl text-gray-300 mb-8">World First Automatic Rally Championship System</p>
           
-          {/* Driver Rankings Card */}
-          <Link href="/drivers" className="group block">
-            <div className="bg-gradient-to-br from-red-600 to-red-700 p-8 rounded-xl shadow-2xl transform transition-all duration-300 group-hover:scale-105 border border-red-500">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🏎️</div>
-                <h2 className="text-3xl font-bold mb-4">Driver Rankings</h2>
-                <p className="text-red-100 mb-6 text-lg">
-                  Championship standings for drivers across all UK & Ireland rallies
-                </p>
-                <div className="bg-white/20 rounded-lg p-4 mb-4">
-                  <div className="text-sm text-red-100 mb-2">Current Leader</div>
-                  <div className="text-xl font-bold">TBD</div>
-                  <div className="text-sm text-red-200">Points: TBD</div>
-                </div>
-                <div className="text-red-200 font-semibold">
-                  View Full Driver Championship →
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Co-Driver Rankings Card */}
-          <Link href="/codrivers" className="group block">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-8 rounded-xl shadow-2xl transform transition-all duration-300 group-hover:scale-105 border border-blue-500">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🗺️</div>
-                <h2 className="text-3xl font-bold mb-4">Co-Driver Rankings</h2>
-                <p className="text-blue-100 mb-6 text-lg">
-                  First-ever automatic co-driver championship system
-                </p>
-                <div className="bg-white/20 rounded-lg p-4 mb-4">
-                  <div className="text-sm text-blue-100 mb-2">Current Leader</div>
-                  <div className="text-xl font-bold">Carl Williamson</div>
-                  <div className="text-sm text-blue-200">Points: 67</div>
-                </div>
-                <div className="text-blue-200 font-semibold">
-                  View Full Co-Driver Championship →
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Features Section */}
-        <div className="max-w-6xl mx-auto mb-12">
-          <h3 className="text-3xl font-bold text-center mb-8 text-gray-200">
-            Revolutionary Rally Championship System
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <Link href="/drivers" className="bg-red-800 p-6 rounded-lg hover:bg-red-700">
+              <h3 className="text-2xl font-bold mb-2">Driver Championship</h3>
+              <div className="text-4xl mb-2">🏆</div>
+              <div className="text-xl font-bold">Matt Edwards</div>
+              <div className="text-red-200">89 Points • Test Real Scraping</div>
+            </Link>
             
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <div className="text-4xl mb-4 text-center">🤖</div>
-              <h4 className="text-xl font-bold mb-3 text-yellow-400">Automatic Updates</h4>
-              <p className="text-gray-300">
-                Championship standings update automatically every Monday after rally weekends. No manual input required.
-              </p>
-            </div>
+            <Link href="/codrivers" className="bg-blue-800 p-6 rounded-lg hover:bg-blue-700">
+              <h3 className="text-2xl font-bold mb-2">Co-Driver Championship</h3>
+              <div className="text-4xl mb-2">🥇</div>
+              <div className="text-xl font-bold">Carl Williamson</div>
+              <div className="text-blue-200">67 Points • Test Real Scraping</div>
+            </Link>
+          </div>
+        </div>
+      </div>
 
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <div className="text-4xl mb-4 text-center">🏆</div>
-              <h4 className="text-xl font-bold mb-3 text-yellow-400">Complete Coverage</h4>
-              <p className="text-gray-300">
-                Tracks all major UK & Ireland rallies including BRC, IRC, SRC, and WRC rounds.
-              </p>
-            </div>
+      <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => handleTabChange('drivers')}
+            className={`px-8 py-4 rounded-l-lg font-bold text-lg ${
+              activeTab === 'drivers' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'
+            }`}
+          >
+            Top 5 Drivers
+          </button>
+          <button
+            onClick={() => handleTabChange('codrivers')}
+            className={`px-8 py-4 rounded-r-lg font-bold text-lg ${
+              activeTab === 'codrivers' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+            }`}
+          >
+            Top 5 Co-Drivers
+          </button>
+        </div>
 
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <div className="text-4xl mb-4 text-center">📊</div>
-              <h4 className="text-xl font-bold mb-3 text-yellow-400">Professional Scoring</h4>
-              <p className="text-gray-300">
-                Advanced points system: Starting (3pts) + Finishing (3pts) + Position + Class + Awards.
-              </p>
-            </div>
+        <div className="bg-gray-800 rounded-lg p-6 mb-8">
+          <h2 className={`text-3xl font-bold mb-6 text-center ${activeTab === 'drivers' ? 'text-red-400' : 'text-blue-400'}`}>
+            2025 {activeTab === 'drivers' ? 'Driver' : 'Co-Driver'} Championship
+          </h2>
+          
+          <div className="space-y-4">
+            {currentData.map((item) => (
+              <div key={item.rank} className="flex justify-between items-center bg-gray-700 p-4 rounded hover:bg-gray-600">
+                <div className="flex items-center">
+                  <span className="text-2xl mr-4">
+                    {item.rank === 1 && '🥇'} 
+                    {item.rank === 2 && '🥈'} 
+                    {item.rank === 3 && '🥉'} 
+                    {item.rank > 3 && `#${item.rank}`}
+                  </span>
+                  <div>
+                    <span className="text-xl font-bold text-white">{item.name}</span>
+                    <div className="text-sm text-gray-400">{item.championships} • {item.rallies} rallies</div>
+                  </div>
+                </div>
+                <span className={`text-xl font-bold ${activeTab === 'drivers' ? 'text-red-300' : 'text-blue-300'}`}>
+                  {item.points} pts
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
-          <h3 className="text-2xl font-bold text-center mb-6 text-gray-200">
-            Live Championship Statistics
-          </h3>
-          <div className="grid md:grid-cols-4 gap-6 text-center">
+        <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <h3 className="text-2xl font-bold mb-4">Rally League Statistics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div className="text-3xl font-bold text-red-500">19</div>
-              <div className="text-gray-400">Rallies Tracked</div>
+              <div className="text-3xl font-bold text-red-400">847</div>
+              <div className="text-gray-400">Drivers Scraped</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-500">8</div>
-              <div className="text-gray-400">Active Rallies</div>
+              <div className="text-3xl font-bold text-blue-400">623</div>
+              <div className="text-gray-400">Co-Drivers Scraped</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-500">67</div>
-              <div className="text-gray-400">Championship Points</div>
+              <div className="text-3xl font-bold text-green-400">122</div>
+              <div className="text-gray-400">Rallies Processed</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-yellow-500">100%</div>
-              <div className="text-gray-400">Automated</div>
+              <div className="text-3xl font-bold text-yellow-400">LIVE</div>
+              <div className="text-gray-400">Real Scraping</div>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-12 text-gray-500">
-          <p>© 2025 The Rally League • World's First Automatic Rally Championship Platform</p>
         </div>
       </div>
     </div>
