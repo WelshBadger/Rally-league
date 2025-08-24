@@ -1,7 +1,7 @@
 {
   "functions": {
-    "src/app/api/**/*.js": {
-      "runtime": "nodejs18.x"
+    "src/app/api/**/route.js": {
+      "runtime": "@vercel/node@3.0.0"
     }
   }
 }
