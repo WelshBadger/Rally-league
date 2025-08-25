@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio'
 
 export async function GET() {
   try {
-    console.log('🚀 REAL WEB SCRAPING: Extracting co-drivers from actual rally websites')
+    console.log('🚀 PURE WEB SCRAPING: Only data extracted from actual rally websites')
     
     const foundCoDrivers = []
     const scrapingResults = []
@@ -22,7 +22,7 @@ export async function GET() {
       }
     ]
     
-    // SCRAPE EACH REAL RALLY WEBSITE
+    // SCRAPE EACH REAL RALLY WEBSITE - NO MANUAL ADDITIONS
     for (const website of realRallyWebsites) {
       try {
         console.log(`🌐 SCRAPING: ${website.name}`)
@@ -56,7 +56,7 @@ export async function GET() {
           }
         })
         
-        // Convert to array and add to results
+        // Convert to array and add ONLY what was actually found
         const coDriverArray = Array.from(websiteCoDrivers)
         coDriverArray.forEach(name => {
           foundCoDrivers.push({
@@ -90,47 +90,34 @@ export async function GET() {
       }
     }
     
-    // Add Carl Williamson (known real data)
-    if (!foundCoDrivers.find(cd => cd.name === "Carl Williamson")) {
-      foundCoDrivers.unshift({
-        name: "Carl Williamson",
-        points: 67,
-        rallies: 3,
-        nationality: "GBR",
-        source: "Known Rally League Data",
-        isAuthentic: true,
-        scrapedFrom: "Rally League Database",
-        extractedAt: new Date().toISOString()
-      })
-    }
-    
+    // NO MANUAL ADDITIONS - Only return what was actually scraped
     return Response.json({
       SUCCESS: true,
-      DEPLOYMENT_TEST: 'RALLY-2025-08-25-REAL-WEB-SCRAPING',
-      phase: 'REAL WEB SCRAPING: Authentic co-driver extraction from rally websites',
+      DEPLOYMENT_TEST: 'RALLY-2025-08-25-PURE-WEB-SCRAPING',
+      phase: 'PURE WEB SCRAPING: Only authentic data extracted from rally websites',
       realWebScraping: true,
       actualHttpRequests: true,
       timestamp: new Date().toISOString(),
-      message: 'REAL WEB SCRAPING COMPLETE: Authentic co-drivers extracted from rally websites!',
+      message: 'PURE WEB SCRAPING COMPLETE: Only authentic co-drivers found by scraping!',
       
-      coDrivers: foundCoDrivers,
-      totalCoDrivers: foundCoDrivers.length,
+      coDrivers: foundCoDrivers, // ONLY what was actually found by scraping
+      totalCoDrivers: foundCoDrivers.length, // Could be 0 if nothing found
       scrapingResults: scrapingResults,
-      dataSource: "Real rally websites (live scraping)",
+      dataSource: "Pure web scraping from real rally websites",
       lastScraped: new Date().toISOString(),
       
       websitesAttempted: realRallyWebsites.length,
       successfulScrapes: scrapingResults.filter(r => r.status === "SUCCESS").length,
       failedScrapes: scrapingResults.filter(r => r.status === "FAILED").length,
-      phaseStatus: "REAL WEB SCRAPING ACTIVE"
+      phaseStatus: "PURE WEB SCRAPING - NO MANUAL ADDITIONS"
     })
     
   } catch (error) {
-    console.error('🔥 Real web scraping error:', error)
+    console.error('🔥 Pure web scraping error:', error)
     return Response.json({
       success: false,
       error: error.message,
-      message: 'Error in real web scraping system',
+      message: 'Error in pure web scraping system',
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
