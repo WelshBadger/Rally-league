@@ -77,8 +77,25 @@ export async function GET() {
           }
         })
         
-        const $ = cheerio.load(response.data)
-        const foundCoDrivers = new Set()
+       const $ = cheerio.load(response.data)
+
+// ADD THIS DEBUG CODE HERE ⬇️
+console.log(`🔍 DEBUG: ${website.name} response length: ${response.data.length}`)
+console.log(`🔍 DEBUG: First 500 characters: ${response.data.substring(0, 500)}`)
+
+if (response.data.includes('<html')) {
+  console.log(`✅ Got HTML from ${website.name}`)
+} else {
+  console.log(`❌ No HTML from ${website.name} - might be redirect or API response`)
+}
+
+const tableCount = $('table').length
+const divCount = $('div').length
+console.log(`🔍 Found ${tableCount} tables and ${divCount} divs on ${website.name}`)
+// END DEBUG CODE ⬆️
+
+const foundCoDrivers = new Set()
+
         
         // STRATEGY 1: Comprehensive table parsing
         $('table, .results-table, .entry-table, .standings, .results, .entries').each((tableIndex, table) => {
