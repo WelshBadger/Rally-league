@@ -15,7 +15,51 @@ interface CoDriver {
   extractedAt: string
 }
 
+interface ScrapedWebsite {
+  website: string
+  url: string
+  coDriversFound?: number
+  scrapedAt?: string
+  status: string
+  error?: string
+  parseStrategies?: number
+}
+
+interface CoDriver {
+  name: string
+  points: number
+  rallies: number
+  position: number
+  nationality: string
+  source: string
+  isAuthentic: boolean
+  scrapedFrom: string
+  extractedAt: string
+}
+
 interface ApiResponse {
+  SUCCESS: boolean
+  DEPLOYMENT_TEST: string
+  phase: string
+  realWebScraping: boolean
+  actualHttpRequests: boolean
+  timestamp: string
+  message: string
+  uniqueTestId?: string
+  deploymentTime?: string
+  codeStatus?: string
+  coDrivers?: CoDriver[]
+  totalCoDrivers?: number
+  scrapedWebsites?: ScrapedWebsite[]
+  dataSource?: string
+  lastScraped?: string
+  websitesAttempted?: number
+  successfulScrapes?: number
+  failedScrapes?: number
+  parseStrategies?: number
+  championshipLeader?: string
+}
+
   SUCCESS: boolean
   DEPLOYMENT_TEST: string
   phase: string
