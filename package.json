@@ -10,7 +10,7 @@
     "scrape": "node -e \"fetch('https://your-rally-league-url.vercel.app/api/scrape-rallies').then(r=>r.json()).then(console.log)\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.55.0",
+    "@supabase/supabase-js": "^2.56.0",
     "axios": "^1.11.0",
     "cheerio": "^1.1.2",
     "jsdom": "^26.1.0",
