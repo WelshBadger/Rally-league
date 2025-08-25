@@ -22,11 +22,7 @@ interface ChampionshipData {
 
 async function getChampionshipData(): Promise<ChampionshipData> {
   try {
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000'
-    
-    const response = await fetch(`${baseUrl}/api/scrape-rallies`, {
+    const response = await fetch('https://rally-league-fresh.vercel.app/api/scrape-rallies', {
       cache: 'no-store'
     })
     return await response.json()
@@ -34,10 +30,6 @@ async function getChampionshipData(): Promise<ChampionshipData> {
     console.error('Error fetching championship data:', error)
     return { coDrivers: [], totalCoDrivers: 0, totalRalliesDiscovered: 0 }
   }
-}
-
-function createSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
 export default async function CoDriversPage() {
@@ -96,37 +88,52 @@ export default async function CoDriversPage() {
           {championshipData.totalCoDrivers > 0 ? (
             <div className="space-y-3">
               {championshipData.coDrivers.map((coDriver: CoDriver, index: number) => (
-                <Link 
-                  key={coDriver.name} 
-                  href={`/codrivers/profile/${createSlug(coDriver.name)}`}
-                  className="block"
+                <div 
+                  key={coDriver.name}
+                  className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-6 border border-gray-600"
                 >
-                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 hover:from-blue-800 hover:to-purple-800 transition-all duration-300 rounded-lg p-6 border border-gray-600 hover:border-blue-500">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                          index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-600'
-                        }`}>
-                          {index + 1}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                        index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-600'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold text-xl">{coDriver.name}</div>
+                        <div className="text-gray-400">
+                          {coDriver.driver ? `Partner: ${coDriver.driver}` : 'Professional Co-Driver'}
                         </div>
-                        <div>
-                          <div className="text-white font-semibold text-xl">{coDriver.name}</div>
-                          <div className="text-gray-400">
-                            {coDriver.driver ? `Partner: ${coDriver.driver}` : 'Professional Co-Driver'}
-                          </div>
-                          <div className="text-green-400 text-sm">
-                            ✅ Real data from {coDriver.source}
-                          </div>
+                        <div className="text-green-400 text-sm">
+                          ✅ Real data from {coDriver.source}
+                        </div>
+                        <div className="text-blue-400 text-sm">
+                          Rally: {coDriver.rallyEvent}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-white font-bold text-2xl">{coDriver.points || 0}</div>
-                        <div className="text-gray-400 text-sm">championship points</div>
-                        <div className="text-blue-400 text-sm mt-1">View Profile →</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white font-bold text-2xl">{coDriver.points || 0}</div>
+                      <div className="text-gray-400 text-sm">championship points</div>
+                      <div className="text-gray-400 text-xs mt-1">
+                        Extracted: {coDriver.extractedAt ? new Date(coDriver.extractedAt).toLocaleDateString() : 'Recent'}
                       </div>
                     </div>
                   </div>
-                </Link>
+                  
+                  {coDriver.rallyUrl && (
+                    <div className="mt-4 pt-4 border-t border-gray-600">
+                      <a 
+                        href={coDriver.rallyUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        View Original Rally Data →
+                      </a>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
@@ -152,8 +159,9 @@ export default async function CoDriversPage() {
           </div>
           <p className="text-gray-300">
             Rankings update automatically as new rally data is discovered and processed. 
-            Each co-driver profile is cross-linked with driver partnerships and rally history. 
             All data is extracted from authentic rally websites with no fake generation.
+            System discovers {championshipData.totalRalliesDiscovered} rallies automatically 
+            and extracts {championshipData.totalCoDrivers} co-drivers from real sources.
           </p>
         </div>
       </main>
