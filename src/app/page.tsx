@@ -42,7 +42,7 @@ export default function HomePage() {
   const fetchChampionshipData = async () => {
     try {
       setLoading(true)
-      console.log('🔄 Fetching championship data from API...')
+      console.log('Fetching championship data from API...')
       
       const response = await fetch('/api/scrape-rallies', {
         cache: 'no-store',
@@ -56,13 +56,13 @@ export default function HomePage() {
       }
       
       const data = await response.json()
-      console.log('📊 API Response:', data)
+      console.log('API Response:', data)
       
       setChampionshipData(data)
       setLastUpdated(new Date().toLocaleString())
       
     } catch (error) {
-      console.error('❌ Error fetching championship data:', error)
+      console.error('Error fetching championship data:', error)
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export default function HomePage() {
               <div className="bg-blue-900/50 rounded-lg p-4">
                 <div className="text-gray-300 text-sm">Phase:</div>
                 <div className="text-white font-semibold">
-                  {loading ? 'Loading...' : 'Deep Website Crawling'}
+                  {loading ? 'Loading...' : 'Event ID Scanning'}
                 </div>
               </div>
               <div className="bg-green-900/50 rounded-lg p-4">
@@ -141,11 +141,11 @@ export default function HomePage() {
             </div>
             
             <div className="bg-purple-900/30 border border-purple-500/50 rounded-lg p-6">
-              <div className="text-gray-300 text-sm mb-2">Rallies Discovered:</div>
+              <div className="text-gray-300 text-sm mb-2">Rally Events Scanned:</div>
               <div className="text-4xl font-bold text-white mb-2">
                 {loading ? '...' : championshipData.totalRalliesDiscovered}
               </div>
-              <div className="text-gray-400 text-sm">Automatically found across entire website structure</div>
+              <div className="text-gray-400 text-sm">Using discovered event ID pattern</div>
             </div>
           </div>
           
@@ -154,7 +154,7 @@ export default function HomePage() {
             disabled={loading}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors mb-8"
           >
-            {loading ? 'Updating...' : 'Refresh REAL Scraping Data'}
+            {loading ? 'Updating...' : 'Refresh Rally Results Data'}
           </button>
         </div>
 
@@ -183,10 +183,10 @@ export default function HomePage() {
                       <div>
                         <div className="text-white font-semibold text-lg">{coDriver.name}</div>
                         <div className="text-gray-400 text-sm">
-                          {coDriver.driver ? `Partner: ${coDriver.driver}` : 'Professional Co-Driver'}
+                          Rally: {coDriver.rallyEvent}
                         </div>
                         <div className="text-green-400 text-xs">
-                          ✅ Real data from {coDriver.source}
+                          Real data from {coDriver.source}
                         </div>
                       </div>
                     </div>
@@ -201,7 +201,7 @@ export default function HomePage() {
           ) : (
             <div className="text-center text-gray-400 py-8">
               <div className="text-6xl mb-4">🏁</div>
-              <div className="text-xl mb-2">Real Web Scraping Active</div>
+              <div className="text-xl mb-2">Real Rally Results Scraping Active</div>
               <div className="text-sm">Co-driver data will appear as it is extracted from real sources</div>
             </div>
           )}
@@ -215,7 +215,7 @@ export default function HomePage() {
           <p className="text-gray-300">
             Your authentic web scraping system is running and connecting to rally websites. 
             Co-driver data will appear as it is extracted from real sources. 
-            System discovers {championshipData.totalRalliesDiscovered} rallies automatically 
+            System scans rally events using discovered URL patterns 
             and processes them for authentic co-driver data.
           </p>
           
