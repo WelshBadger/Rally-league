@@ -6,11 +6,29 @@ export async function GET() {
   try {
     console.log('🚀 REAL DATA EXTRACTION: Scraping 600+ co-drivers and saving to Supabase')
     
-    const scrapedCoDrivers = []
-    const scrapingResults = []
+const scrapedCoDrivers = []
+const scrapingResults = []
+
     
     // TARGET REAL RALLY DATA SOURCES - Where 600+ co-drivers actually exist
     const rallyDataSources = [
+  {
+    name: "Nicky Grist Stages 2025 - Entry List",
+    url: "https://www.rallies.info/webentry/2025/nickygrist/entrylist.html",
+    type: "entry_list"
+  },
+  {
+    name: "Jim Clark Rally 2025 - Results",
+    url: "https://www.rallies.info/webentry/2025/jimclark/results.html", 
+    type: "results"
+  },
+  {
+    name: "Ulster Rally 2025 - Entry List",
+    url: "https://www.rallies.info/webentry/2025/ulster/entrylist.html",
+    type: "entry_list"
+  }
+]
+Sources = [
       {
         name: "Rallies.info - UK Championship Entries",
         url: "https://www.rallies.info/webentry/2025/",
