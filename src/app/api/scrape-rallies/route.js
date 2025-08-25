@@ -61,7 +61,7 @@ export async function GET() {
     // SCRAPE EACH REAL RALLY DATA SOURCE
     for (const source of rallyDataSources) {
       try {
-        console.log(`🌐 EXTRACTING from \${source.name}`)
+        console.log(`🌐 EXTRACTING from ${source.name}`)
         
         const response = await axios.get(source.url, {
           timeout: 30000,
@@ -75,10 +75,25 @@ export async function GET() {
           }
         })
         
+        // Load the HTML content
         const $ = cheerio.load(response.data)
+
+        // DEBUG: Log what we're actually getting from rally websites
+        console.log(`🔍 DEBUG ${source.name}:`)
+        console.log(`📄 Response length: ${response.data.length} characters`)
+        console.log(`📄 First 1000 characters:`)
+        console.log(response.data.substring(0, 1000))
+        console.log(`📊 HTML elements found:`)
+        console.log(`- Tables: ${$('table').length}`)
+        console.log(`- Divs: ${$('div').length}`)
+        console.log(`- Links: ${$('a').length}`)
+        console.log(`- Text content sample: ${$('body').text().substring(0, 500)}`)
+        console.log(`🔍 Looking for driver/co-driver patterns...`)
+
+        // Initialize the Set for found co-drivers
         const foundCoDrivers = new Set()
         
-        console.log(`📄 Processing \${response.data.length} characters from \${source.name}`)
+        console.log(`📄 Processing ${response.data.length} characters from ${source.name}`)
         
         // STRATEGY 1: Extract from entry tables and result tables
         $('table, .entry-table, .results-table, .standings-table').each((tableIndex, table) => {
@@ -92,16 +107,16 @@ export async function GET() {
                 // Extract co-driver name (usually the second name in driver/co-driver pairs)
                 if (match[2] && isValidCoDriverName(match[2])) {
                   foundCoDrivers.add(match[2].trim())
-                  console.log(`Found co-driver: \${match[2].trim()} from \${source.name}`)
+                  console.log(`Found co-driver: ${match[2].trim()} from ${source.name}`)
                 }
                 if (match[3] && isValidCoDriverName(match[3])) {
                   foundCoDrivers.add(match[3].trim())
-                  console.log(`Found co-driver: \${match[3].trim()} from \${source.name}`)
+                  console.log(`Found co-driver: ${match[3].trim()} from ${source.name}`)
                 }
                 // For single capture groups (co-driver field formats)
                 if (match[1] && !match[2] && isValidCoDriverName(match[1])) {
                   foundCoDrivers.add(match[1].trim())
-                  console.log(`Found co-driver: \${match[1].trim()} from \${source.name}`)
+                  console.log(`Found co-driver: ${match[1].trim()} from ${source.name}`)
                 }
               }
             })
@@ -117,11 +132,11 @@ export async function GET() {
             for (const match of matches) {
               if (match[2] && isValidCoDriverName(match[2])) {
                 foundCoDrivers.add(match[2].trim())
-                console.log(`Found co-driver: \${match[2].trim()} from crew section on \${source.name}`)
+                console.log(`Found co-driver: ${match[2].trim()} from crew section on ${source.name}`)
               }
               if (match[1] && !match[2] && isValidCoDriverName(match[1])) {
                 foundCoDrivers.add(match[1].trim())
-                console.log(`Found co-driver: \${match[1].trim()} from crew section on \${source.name}`)
+                console.log(`Found co-driver: ${match[1].trim()} from crew section on ${source.name}`)
               }
             }
           })
@@ -136,11 +151,11 @@ export async function GET() {
             for (const match of matches) {
               if (match[2] && isValidCoDriverName(match[2])) {
                 foundCoDrivers.add(match[2].trim())
-                console.log(`Found co-driver: \${match[2].trim()} from results section on \${source.name}`)
+                console.log(`Found co-driver: ${match[2].trim()} from results section on ${source.name}`)
               }
               if (match[1] && !match[2] && isValidCoDriverName(match[1])) {
                 foundCoDrivers.add(match[1].trim())
-                console.log(`Found co-driver: \${match[1].trim()} from results section on \${source.name}`)
+                console.log(`Found co-driver: ${match[1].trim()} from results section on ${source.name}`)
               }
             }
           })
@@ -148,7 +163,7 @@ export async function GET() {
         
         // Convert Set to Array and create co-driver objects
         const coDriverArray = Array.from(foundCoDrivers)
-        console.log(`✅ EXTRACTED \${coDriverArray.length} unique co-drivers from \${source.name}`)
+        console.log(`✅ EXTRACTED ${coDriverArray.length} unique co-drivers from ${source.name}`)
         
         // SAVE EACH FOUND CO-DRIVER TO SUPABASE DATABASE
         for (const coDriverName of coDriverArray) {
@@ -179,7 +194,7 @@ export async function GET() {
         })
         
       } catch (sourceError) {
-        console.log(`⚠️ Could not scrape \${source.name}: \${sourceError.message}`)
+        console.log(`⚠️ Could not scrape ${source.name}: ${sourceError.message}`)
         scrapingResults.push({
           website: source.name,
           url: source.url,
@@ -192,7 +207,7 @@ export async function GET() {
     // GET ALL CO-DRIVERS FROM DATABASE (including previously scraped ones)
     const allCoDriversFromDB = await getAllCoDriversFromDatabase()
     
-    // Add Carl Williamson to database if not exists
+    // Add Carl Williamson to database if not exists (ONLY known real data)
     if (!allCoDriversFromDB.find(cd => cd.name === "Carl Williamson")) {
       await saveCoDriverToDatabase({
         name: "Carl Williamson",
