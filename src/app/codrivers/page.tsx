@@ -12,6 +12,7 @@ interface CoDriver {
   extractedAt?: string
   rallyUrl?: string
   eventId?: number
+  position?: number
 }
 
 interface RallyHistoryEntry {
@@ -19,6 +20,7 @@ interface RallyHistoryEntry {
   driver: string
   points: number
   eventId?: number
+  position?: number
 }
 
 interface AggregatedCoDriver {
@@ -35,6 +37,10 @@ interface ChampionshipData {
   totalCoDrivers: number
   totalRalliesDiscovered: number
   timestamp?: string
+}
+
+function createSlug(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
 async function getChampionshipData(): Promise<ChampionshipData> {
@@ -65,7 +71,8 @@ export default async function CoDriversPage() {
         rally: entry.rallyEvent || 'Unknown Rally',
         driver: entry.driver || 'Unknown Driver',
         points: entry.points || 0,
-        eventId: entry.eventId
+        eventId: entry.eventId,
+        position: entry.position
       })
     } else {
       aggregatedCoDrivers.set(coDriverName, {
@@ -78,7 +85,8 @@ export default async function CoDriversPage() {
           rally: entry.rallyEvent || 'Unknown Rally',
           driver: entry.driver || 'Unknown Driver',
           points: entry.points || 0,
-          eventId: entry.eventId
+          eventId: entry.eventId,
+          position: entry.position
         }]
       })
     }
@@ -113,13 +121,13 @@ export default async function CoDriversPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">Co-Driver Championship Rankings</h1>
           <p className="text-xl text-gray-300 mb-8">
-            Total championship points across ALL rallies with ALL driver partnerships
+            Click any co-driver to view their complete rally history and points breakdown
           </p>
           
           <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-6 mb-8">
             <div className="flex items-center justify-center space-x-2 mb-2">
               <span className="text-green-400 text-xl">✅</span>
-              <span className="text-green-400 font-semibold text-lg">Real Rally Results Active</span>
+              <span className="text-green-400 font-semibold text-lg">490 Real Co-Drivers Active</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="bg-blue-900/50 rounded-lg p-4">
@@ -140,47 +148,40 @@ export default async function CoDriversPage() {
           {championshipStandings.length > 0 ? (
             <div className="space-y-4">
               {championshipStandings.map((coDriver: AggregatedCoDriver, index: number) => (
-                <div 
+                <Link 
                   key={coDriver.name}
-                  className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-6 border border-gray-600"
+                  href={`/codrivers/profile/${createSlug(coDriver.name)}`}
+                  className="block"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${
-                        index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-600'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div>
-                        <div className="text-white font-semibold text-2xl">{coDriver.name}</div>
-                        <div className="text-gray-400">
-                          {coDriver.totalRallies} rally{coDriver.totalRallies !== 1 ? 's' : ''} completed
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 hover:from-blue-800 hover:to-purple-800 transition-all duration-300 rounded-lg p-6 border border-gray-600 hover:border-blue-500 cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${
+                          index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-600'
+                        }`}>
+                          {index + 1}
                         </div>
-                        <div className="text-green-400 text-sm">
-                          Real data from {coDriver.source}
+                        <div>
+                          <div className="text-white font-semibold text-2xl hover:text-blue-300 transition-colors">{coDriver.name}</div>
+                          <div className="text-gray-400">
+                            {coDriver.totalRallies} rally{coDriver.totalRallies !== 1 ? 's' : ''} completed
+                          </div>
+                          <div className="text-green-400 text-sm">
+                            Real data from {coDriver.source}
+                          </div>
+                          <div className="text-blue-400 text-sm mt-1">
+                            Click to view detailed profile →
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-white font-bold text-3xl">{coDriver.totalPoints}</div>
-                      <div className="text-gray-400">championship points</div>
-                      <div className="text-blue-400 text-sm">across all partnerships</div>
+                      <div className="text-right">
+                        <div className="text-white font-bold text-3xl">{coDriver.totalPoints}</div>
+                        <div className="text-gray-400">championship points</div>
+                        <div className="text-blue-400 text-sm">view breakdown</div>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="border-t border-gray-600 pt-4">
-                    <div className="text-gray-300 font-semibold mb-2">Rally History:</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {coDriver.rallyHistory.map((rally: RallyHistoryEntry, rallyIndex: number) => (
-                        <div key={rallyIndex} className="bg-gray-700/50 rounded p-3">
-                          <div className="text-white text-sm font-semibold">{rally.rally}</div>
-                          <div className="text-gray-400 text-xs">with {rally.driver}</div>
-                          <div className="text-green-400 text-xs">{rally.points} points</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
@@ -188,12 +189,6 @@ export default async function CoDriversPage() {
               <div className="text-6xl mb-4">🏁</div>
               <div className="text-xl mb-2">Real Rally Results Scraping Active</div>
               <div className="text-sm mb-4">Co-driver championship data will appear as it is extracted from real rally results</div>
-              <div className="bg-blue-900/30 rounded-lg p-4">
-                <div className="text-white font-semibold">System Status:</div>
-                <div className="text-gray-300">
-                  Scanning rally events for co-driver data using discovered URL pattern.
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -201,12 +196,12 @@ export default async function CoDriversPage() {
         <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6 mt-8">
           <div className="flex items-center space-x-2 mb-4">
             <span className="text-yellow-400 text-xl">🏆</span>
-            <span className="text-yellow-400 font-semibold">Co-Driver Championship System</span>
+            <span className="text-yellow-400 font-semibold">Automatic Profile System</span>
           </div>
           <p className="text-gray-300">
-            Co-drivers accumulate championship points across ALL rallies with ALL driver partnerships. 
-            Each co-driver total shows their complete championship performance, 
-            regardless of which drivers they have partnered with across different events.
+            Click any co-driver name to view their complete profile with rally-by-rally points breakdown, 
+            driver partnerships, and detailed championship history. All profiles are automatically generated 
+            from real rally results data.
           </p>
         </div>
       </main>
