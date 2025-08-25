@@ -1,137 +1,132 @@
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+import { scrapeRalliesInfo } from '../../../lib/scrapers/ralliesInfoScraper.js'
+import { scrapeEWRC } from '../../../lib/scrapers/ewrcScraper.js'
+import { scrapeBRC } from '../../../lib/scrapers/brcScraper.js'
+import { saveToWebsiteDatabase, poolCoDriverData, saveUnifiedData } from '../../../lib/fieldMatcher.js'
 
 export async function GET() {
   try {
-    console.log('🚀 PURE WEB SCRAPING: Only data extracted from actual rally websites')
+    console.log('🚀 MULTI-DATABASE SCRAPING: Website-specific databases with field matching')
     
-    const foundCoDrivers = []
     const scrapingResults = []
+    let totalCoDriversFound = 0
     
-    // REAL RALLY WEBSITES - Actual sources with co-driver data
-    const realRallyWebsites = [
-      {
-        name: "Rally Results Archive",
-        url: "https://www.rallybase.nl/index.php?p=results",
-        type: "results"
-      },
-      {
-        name: "UK Rally Results",
-        url: "https://www.ukrallying.com/results/",
-        type: "championship"
-      }
-    ]
+    // STEP 1: Scrape each website with its specific scraper
+    console.log('📊 PHASE 1: Scraping individual websites')
     
-    // SCRAPE EACH REAL RALLY WEBSITE - NO MANUAL ADDITIONS
-    for (const website of realRallyWebsites) {
-      try {
-        console.log(`🌐 SCRAPING: ${website.name}`)
-        
-        const response = await axios.get(website.url, {
-          timeout: 15000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        })
-        
-        const $ = cheerio.load(response.data)
-        const websiteCoDrivers = new Set()
-        
-        // EXTRACT CO-DRIVERS: Look for driver/co-driver patterns
-        $('table tr, .results tr, .entry tr').each((index, element) => {
-          const rowText = $(element).text().trim()
-          
-          // Pattern: Driver / Co-driver
-          const coDriverPattern = /([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)/g
-          const matches = rowText.matchAll(coDriverPattern)
-          
-          for (const match of matches) {
-            if (match[2] && match[2].length > 5) {
-              const coDriverName = match[2].trim()
-              if (isValidName(coDriverName)) {
-                websiteCoDrivers.add(coDriverName)
-                console.log(`✅ FOUND REAL CO-DRIVER: ${coDriverName} from ${website.name}`)
-              }
-            }
-          }
-        })
-        
-        // Convert to array and add ONLY what was actually found
-        const coDriverArray = Array.from(websiteCoDrivers)
-        coDriverArray.forEach(name => {
-          foundCoDrivers.push({
-            name: name,
-            points: 0, // Will be calculated from real rally positions in Phase 3
-            rallies: 1,
-            nationality: "Unknown", // Will be extracted from real data
-            source: website.name,
-            isAuthentic: true,
-            scrapedFrom: website.url,
-            extractedAt: new Date().toISOString()
-          })
-        })
-        
-        scrapingResults.push({
-          website: website.name,
-          url: website.url,
-          coDriversFound: coDriverArray.length,
-          status: "SUCCESS",
-          scrapedAt: new Date().toISOString()
-        })
-        
-      } catch (error) {
-        console.log(`⚠️ Could not scrape ${website.name}: ${error.message}`)
-        scrapingResults.push({
-          website: website.name,
-          url: website.url,
-          error: error.message,
-          status: "FAILED"
-        })
-      }
+    // Scrape Rallies.info
+    const ralliesInfoData = await scrapeRalliesInfo()
+    if (ralliesInfoData.length > 0) {
+      await saveToWebsiteDatabase('rallies_info', ralliesInfoData)
+      totalCoDriversFound += ralliesInfoData.length
+      scrapingResults.push({
+        website: 'Rallies.info',
+        coDriversFound: ralliesInfoData.length,
+        status: 'SUCCESS',
+        database: 'rallies_info_codrivers'
+      })
+    } else {
+      scrapingResults.push({
+        website: 'Rallies.info',
+        coDriversFound: 0,
+        status: 'NO_DATA',
+        database: 'rallies_info_codrivers'
+      })
     }
     
-    // NO MANUAL ADDITIONS - Only return what was actually scraped
+    // Scrape EWRC Results
+    const ewrcData = await scrapeEWRC()
+    if (ewrcData.length > 0) {
+      await saveToWebsiteDatabase('ewrc', ewrcData)
+      totalCoDriversFound += ewrcData.length
+      scrapingResults.push({
+        website: 'EWRC Results',
+        coDriversFound: ewrcData.length,
+        status: 'SUCCESS',
+        database: 'ewrc_codrivers'
+      })
+    } else {
+      scrapingResults.push({
+        website: 'EWRC Results',
+        coDriversFound: 0,
+        status: 'NO_DATA',
+        database: 'ewrc_codrivers'
+      })
+    }
+    
+    // Scrape British Rally Championship
+    const brcData = await scrapeBRC()
+    if (brcData.length > 0) {
+      await saveToWebsiteDatabase('brc', brcData)
+      totalCoDriversFound += brcData.length
+      scrapingResults.push({
+        website: 'British Rally Championship',
+        coDriversFound: brcData.length,
+        status: 'SUCCESS',
+        database: 'brc_codrivers'
+      })
+    } else {
+      scrapingResults.push({
+        website: 'British Rally Championship',
+        coDriversFound: 0,
+        status: 'NO_DATA',
+        database: 'brc_codrivers'
+      })
+    }
+    
+    console.log(`📊 PHASE 1 COMPLETE: Found ${totalCoDriversFound} co-drivers across all websites`)
+    
+    // STEP 2: Pool and match data from all website databases
+    console.log('🔄 PHASE 2: Pooling and matching data from website databases')
+    
+    const unifiedData = await poolCoDriverData()
+    const savedUnifiedData = await saveUnifiedData(unifiedData)
+    
+    console.log(`🔄 PHASE 2 COMPLETE: ${savedUnifiedData.length} unique co-drivers in unified database`)
+    
+    // STEP 3: Return the unified results
     return Response.json({
       SUCCESS: true,
-      DEPLOYMENT_TEST: 'RALLY-2025-08-25-PURE-WEB-SCRAPING',
-      phase: 'PURE WEB SCRAPING: Only authentic data extracted from rally websites',
+      DEPLOYMENT_TEST: 'RALLY-2025-08-25-MULTI-DATABASE-ARCHITECTURE',
+      phase: 'MULTI-DATABASE SCRAPING: Website-specific databases with field matching',
       realWebScraping: true,
       actualHttpRequests: true,
       timestamp: new Date().toISOString(),
-      message: 'PURE WEB SCRAPING COMPLETE: Only authentic co-drivers found by scraping!',
+      message: 'MULTI-DATABASE SCRAPING COMPLETE: Co-drivers extracted and unified!',
       
-      coDrivers: foundCoDrivers, // ONLY what was actually found by scraping
-      totalCoDrivers: foundCoDrivers.length, // Could be 0 if nothing found
-      scrapingResults: scrapingResults,
-      dataSource: "Pure web scraping from real rally websites",
+      // Return unified co-drivers from master database
+      coDrivers: savedUnifiedData,
+      totalCoDrivers: savedUnifiedData.length,
+      
+      // Individual website results
+      websiteResults: scrapingResults,
+      totalScrapedAcrossAllSites: totalCoDriversFound,
+      
+      // Database information
+      databaseArchitecture: {
+        websiteSpecificTables: ['rallies_info_codrivers', 'ewrc_codrivers', 'brc_codrivers'],
+        unifiedTable: 'unified_codrivers',
+        fieldMatching: 'Active',
+        dataSources: scrapingResults.map(r => r.website)
+      },
+      
+      dataSource: "Multi-database architecture with field matching",
       lastScraped: new Date().toISOString(),
       
-      websitesAttempted: realRallyWebsites.length,
+      websitesAttempted: 3,
       successfulScrapes: scrapingResults.filter(r => r.status === "SUCCESS").length,
-      failedScrapes: scrapingResults.filter(r => r.status === "FAILED").length,
-      phaseStatus: "PURE WEB SCRAPING - NO MANUAL ADDITIONS"
+      noDataScrapes: scrapingResults.filter(r => r.status === "NO_DATA").length,
+      
+      phaseStatus: "MULTI-DATABASE ARCHITECTURE COMPLETE - PROFESSIONAL DATA AGGREGATION ACTIVE"
     })
     
   } catch (error) {
-    console.error('🔥 Pure web scraping error:', error)
+    console.error('🔥 Multi-database scraping error:', error)
     return Response.json({
       success: false,
       error: error.message,
-      message: 'Error in pure web scraping system',
+      message: 'Error in multi-database scraping system',
+      phase: 'MULTI-DATABASE SCRAPING - ERROR',
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
-}
-
-function isValidName(name) {
-  if (!name || name.length < 5 || !name.includes(' ')) return false
-  
-  const parts = name.split(' ')
-  if (parts.length !== 2) return false
-  
-  const [firstName, lastName] = parts
-  if (firstName.length < 2 || lastName.length < 2) return false
-  if (!/^[A-Z][a-z]+$/.test(firstName) || !/^[A-Z][a-z]+$/.test(lastName)) return false
-  
-  return true
 }
