@@ -144,13 +144,11 @@ export default function CoDriversPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/30">
                 <p className="text-red-300 font-bold">❌ OLD SYSTEM:</p>
-                <p className="text-gray-300 text-sm">Fake "122 rallies, 623 co-drivers"</p>
-                <p className="text-gray-300 text-sm">Hardcoded data generation</p>
+                <p className="text-gray-300 text-sm">Fake numbers and hardcoded data</p>
               </div>
               <div className="bg-green-900/20 p-4 rounded-lg border border-green-500/30">
                 <p className="text-green-300 font-bold">✅ NEW SYSTEM:</p>
                 <p className="text-gray-300 text-sm">REAL web scraping API</p>
-                <p className="text-gray-300 text-sm">Authentic rally data</p>
               </div>
             </div>
           </div>
