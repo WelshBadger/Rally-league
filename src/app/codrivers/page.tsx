@@ -3,6 +3,18 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+interface CoDriver {
+  name: string
+  points: number
+  rallies: number
+  position: number
+  nationality: string
+  source: string
+  isAuthentic: boolean
+  scrapedFrom: string
+  extractedAt: string
+}
+
 interface ApiResponse {
   SUCCESS: boolean
   DEPLOYMENT_TEST: string
@@ -14,6 +26,16 @@ interface ApiResponse {
   uniqueTestId: string
   deploymentTime: string
   codeStatus: string
+  coDrivers: CoDriver[]
+  totalCoDrivers: number
+  scrapedWebsites: any[]
+  dataSource: string
+  lastScraped: string
+  websitesAttempted: number
+  successfulScrapes: number
+  failedScrapes: number
+  parseStrategies: number
+  championshipLeader: string
 }
 
 export default function CoDriversPage() {
@@ -133,7 +155,100 @@ export default function CoDriversPage() {
           </button>
         </div>
 
-        <div className="text-center">
+        {/* Co-Drivers Championship Table */}
+        {apiData && apiData.coDrivers && apiData.coDrivers.length > 0 && (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-blue-500/20 mt-8">
+            <div className="px-6 py-4 bg-slate-700/50">
+              <h3 className="text-xl font-bold text-white">
+                🏆 REAL Co-Driver Championship Standings
+              </h3>
+              <p className="text-blue-200 mt-1">
+                Live data from {apiData.totalCoDrivers} co-drivers • Scraped from actual rally websites
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-700/30">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                      Position
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                      Co-Driver Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                      Points
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                      Rallies
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                      Source
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-600/50">
+                  {apiData.coDrivers.map((coDriver, index) => (
+                    <tr key={index} className="hover:bg-slate-700/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="text-2xl font-bold text-blue-400">
+                            {coDriver.position}
+                          </span>
+                          {coDriver.position === 1 && <span className="ml-2 text-yellow-400">👑</span>}
+                          {coDriver.position === 2 && <span className="ml-2 text-gray-300">🥈</span>}
+                          {coDriver.position === 3 && <span className="ml-2 text-amber-600">🥉</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="text-white font-semibold">
+                            {coDriver.name}
+                          </span>
+                          {coDriver.isAuthentic && (
+                            <span className="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded">
+                              REAL Scraped
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-xl font-bold text-green-400">
+                          {coDriver.points}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
+                        {coDriver.rallies}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-400 text-sm">
+                        {coDriver.source}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Show message if no co-drivers found */}
+        {apiData && apiData.coDrivers && apiData.coDrivers.length === 0 && (
+          <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6 mt-8">
+            <h3 className="text-yellow-300 font-bold mb-2">
+              🔍 No Co-Drivers Found Yet
+            </h3>
+            <p className="text-yellow-200">
+              Your REAL web scraping is working, but no co-drivers were extracted from the rally websites yet. 
+              This is normal - we may need to refine the parsing logic for specific website formats.
+            </p>
+            <p className="text-gray-300 text-sm mt-2">
+              Websites attempted: {apiData.websitesAttempted} • Successful: {apiData.successfulScrapes}
+            </p>
+          </div>
+        )}
+
+        <div className="text-center mt-8">
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-8 border border-blue-500/20">
             <h3 className="text-2xl font-bold text-white mb-4">
               🏆 REAL Web Scraping Achievement
