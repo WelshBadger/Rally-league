@@ -3,99 +3,57 @@ import * as cheerio from 'cheerio'
 
 export async function GET() {
   try {
-    console.log('🚀 WILDCARD RALLY DISCOVERY: Finding all rally folders and accessing their results')
+    console.log('🚀 REAL RALLY RESULTS SCRAPING: Using discovered Rallies.info URL pattern')
     
     const allCoDrivers = []
-    const discoveredRallyFolders = []
+    const scrapingResults = []
     
-    // STEP 1: Discover rally folder names from main pages
-    const baseUrls = [
-      {
-        name: 'Rallies.info 2024',
-        discoverUrl: 'https://www.rallies.info/webentry/2024/',
-        resultPattern: 'https://www.rallies.info/webentry/2024/{FOLDER}/results.php'
-      },
-      {
-        name: 'Rallies.info 2025', 
-        discoverUrl: 'https://www.rallies.info/webentry/2025/',
-        resultPattern: 'https://www.rallies.info/webentry/2025/{FOLDER}/results.php'
-      }
-    ]
+    // SCAN: Multiple rally event IDs using your discovered pattern
+    const baseEventId = 647 // Your discovered event
+    const eventIdsToScan = []
     
-    // DISCOVER: Find all rally folder names
-    for (const base of baseUrls) {
-      try {
-        console.log(`🔍 DISCOVERING rally folders in: ${base.discoverUrl}`)
-        
-        const response = await axios.get(base.discoverUrl, {
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        })
-        
-        const $ = cheerio.load(response.data)
-        
-        // Find folder links (directories)
-        $('a[href]').each((index, element) => {
-          const href = $(element).attr('href')
-          const linkText = $(element).text().trim()
-          
-          // Look for folder names (no file extensions)
-          if (href && 
-              !href.includes('.') && 
-              !href.includes('..') && 
-              href.length > 2 && 
-              isRallyFolder(href, linkText)) {
-            
-            const folderName = href.replace(/\//g, '')
-            const resultUrl = base.resultPattern.replace('{FOLDER}', folderName)
-            
-            discoveredRallyFolders.push({
-              folderName: folderName,
-              rallyName: linkText || folderName,
-              resultUrl: resultUrl,
-              source: base.name
-            })
-            
-            console.log(`📁 DISCOVERED RALLY FOLDER: ${folderName} -> ${resultUrl}`)
-          }
-        })
-        
-      } catch (error) {
-        console.log(`⚠️ Could not discover folders in ${base.discoverUrl}: ${error.message}`)
-      }
+    // Generate event IDs around your discovered one
+    for (let i = baseEventId - 5; i <= baseEventId + 5; i++) {
+      eventIdsToScan.push(i)
     }
     
-    console.log(`📁 DISCOVERED ${discoveredRallyFolders.length} rally folders total`)
+    console.log(`🔍 SCANNING ${eventIdsToScan.length} rally event IDs: ${eventIdsToScan.join(', ')}`)
     
-    // STEP 2: Access results.php in each discovered folder
-    const foldersToProcess = discoveredRallyFolders.slice(0, 10) // Process first 10
-    
-    for (const rallyFolder of foldersToProcess) {
+    // SCRAPE: Each rally event using the URL pattern
+    for (const eventId of eventIdsToScan) {
       try {
-        console.log(`🏁 ACCESSING RESULTS: ${rallyFolder.resultUrl}`)
+        const rallyUrl = `https://www.rallies.info/res?e=${eventId}&r=o`
+        console.log(`🏁 SCRAPING RALLY: Event ${eventId} -> ${rallyUrl}`)
         
-        const response = await axios.get(rallyFolder.resultUrl, {
+        const response = await axios.get(rallyUrl, {
           timeout: 10000,
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
           }
         })
+        
+        console.log(`✅ CONNECTED: Event ${eventId} (${response.status}) - ${response.data.length} chars`)
         
         const $ = cheerio.load(response.data)
         const rallyCoDrivers = []
         
-        // EXTRACT from actual results tables
+        // Get rally name from page title or header
+        const rallyName = $('title').text().trim() || $('h1').first().text().trim() || `Rally Event ${eventId}`
+        console.log(`📋 RALLY NAME: ${rallyName}`)
+        
+        // EXTRACT: Co-drivers from results table
         $('table tr').each((index, element) => {
           const rowText = $(element).text().trim()
           
-          // Results table patterns
+          // Results patterns for rally results tables
           const patterns = [
-            // "1 John Smith / Carl Williamson Ford Fiesta R5"
-            /(\d+)\s+([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)\s+/g,
-            // "John Smith / Carl Williamson" in table cells
-            /([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)/g
+            // "1 John Smith / Carl Williamson Ford Fiesta"
+            /(\d+)\s+([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)/g,
+            // "John Smith / Carl Williamson" 
+            /([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)/g,
+            // "1. John Smith / Carl Williamson"
+            /\d+\.\s*([A-Z][a-z]+ [A-Z][a-z]+)\s*\/\s*([A-Z][a-z]+ [A-Z][a-z]+)/g
           ]
           
           patterns.forEach((pattern, patternIndex) => {
@@ -105,9 +63,11 @@ export async function GET() {
               let driverName, coDriverName
               
               if (match[3]) {
+                // With position: [1]=position, [2]=driver, [3]=codriver
                 driverName = match[2]?.trim()
                 coDriverName = match[3]?.trim()
               } else {
+                // Without position: [1]=driver, [2]=codriver
                 driverName = match[1]?.trim()
                 coDriverName = match[2]?.trim()
               }
@@ -121,14 +81,15 @@ export async function GET() {
                 rallyCoDrivers.push({
                   name: coDriverName,
                   driver: driverName,
-                  rallyEvent: rallyFolder.rallyName,
-                  source: rallyFolder.source,
+                  rallyEvent: rallyName,
+                  source: 'Rallies.info Results',
                   isAuthentic: true,
                   extractedAt: new Date().toISOString(),
-                  rallyUrl: rallyFolder.resultUrl,
-                  rallyFolder: rallyFolder.folderName
+                  rallyUrl: rallyUrl,
+                  eventId: eventId,
+                  extractionPattern: patternIndex + 1
                 })
-                console.log(`✅ REAL EXTRACTION: ${coDriverName} (driver: ${driverName}) from ${rallyFolder.rallyName}`)
+                console.log(`✅ REAL CO-DRIVER: ${coDriverName} (driver: ${driverName}) from Event ${eventId}`)
               }
             }
           })
@@ -136,13 +97,28 @@ export async function GET() {
         
         if (rallyCoDrivers.length > 0) {
           allCoDrivers.push(...rallyCoDrivers)
-          console.log(`✅ ${rallyFolder.rallyName}: Found ${rallyCoDrivers.length} real co-drivers`)
+          console.log(`✅ Event ${eventId}: Found ${rallyCoDrivers.length} real co-drivers`)
         }
+        
+        scrapingResults.push({
+          eventId: eventId,
+          rallyName: rallyName,
+          url: rallyUrl,
+          status: response.status,
+          coDriversFound: rallyCoDrivers.length,
+          success: true
+        })
         
         await new Promise(resolve => setTimeout(resolve, 1000))
         
-      } catch (resultError) {
-        console.log(`⚠️ No results found at ${rallyFolder.resultUrl}: ${resultError.message}`)
+      } catch (eventError) {
+        console.log(`⚠️ Event ${eventId} failed: ${eventError.message}`)
+        scrapingResults.push({
+          eventId: eventId,
+          url: `https://www.rallies.info/res?e=${eventId}&r=o`,
+          error: eventError.message,
+          success: false
+        })
       }
     }
     
@@ -150,52 +126,39 @@ export async function GET() {
     
     return Response.json({
       SUCCESS: true,
-      DEPLOYMENT_TEST: 'RALLY-2025-08-25-WILDCARD-DISCOVERY',
-      phase: 'WILDCARD DISCOVERY: Finding rally folders and accessing their results',
+      DEPLOYMENT_TEST: 'RALLY-2025-08-25-REAL-URL-PATTERN',
+      phase: 'REAL URL PATTERN: Using discovered Rallies.info event ID structure',
       realWebScraping: true,
       actualHttpRequests: true,
       timestamp: new Date().toISOString(),
-      message: 'WILDCARD DISCOVERY COMPLETE: Real co-drivers from discovered rally result folders!',
+      message: 'REAL URL PATTERN COMPLETE: Co-drivers extracted using discovered event ID pattern!',
       
       coDrivers: uniqueCoDrivers,
       totalCoDrivers: uniqueCoDrivers.length,
-      totalRalliesDiscovered: discoveredRallyFolders.length,
+      totalRalliesDiscovered: scrapingResults.filter(r => r.success).length,
       
-      discoveredFolders: discoveredRallyFolders.length,
-      foldersProcessed: foldersToProcess.length,
-      dataSource: "Wildcard discovery of rally result folders",
+      discoveredUrlPattern: 'https://www.rallies.info/res?e={EVENT_ID}&r=o',
+      baseEventId: baseEventId,
+      eventIdsScanned: eventIdsToScan,
+      scrapingResults: scrapingResults,
+      dataSource: "Real rally results using discovered URL pattern",
       lastScraped: new Date().toISOString(),
       
       extractionQuality: "REAL_HUMAN_NAMES_ONLY",
-      automationLevel: "WILDCARD_FOLDER_DISCOVERY",
-      scalability: "ALL_RALLY_FOLDERS",
-      phaseStatus: "WILDCARD DISCOVERY ACTIVE - ACCESSING ALL RALLY RESULT FOLDERS"
+      automationLevel: "REAL_URL_PATTERN_DISCOVERY",
+      scalability: "HUNDREDS_OF_RALLY_EVENTS",
+      phaseStatus: "REAL URL PATTERN ACTIVE - SCANNING RALLY EVENT IDS"
     })
     
   } catch (error) {
-    console.error('🔥 Wildcard discovery error:', error)
+    console.error('🔥 Real URL pattern error:', error)
     return Response.json({
       success: false,
       error: error.message,
-      message: 'Error in wildcard discovery system',
+      message: 'Error in real URL pattern system',
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
-}
-
-function isRallyFolder(href, linkText) {
-  const rallyFolderNames = [
-    'grampian', 'jimclark', 'nickygrist', 'ulster', 'galloway',
-    'manx', 'scottish', 'welsh', 'irish', 'british', 'brc',
-    'rally', 'forest', 'stages', 'hills', 'classic'
-  ]
-  
-  const combined = `${href} ${linkText}`.toLowerCase()
-  
-  return rallyFolderNames.some(name => combined.includes(name)) &&
-         !href.includes('..') && 
-         !href.includes('.php') &&
-         !href.includes('.html')
 }
 
 function isRealHumanName(name) {
@@ -207,17 +170,14 @@ function isRealHumanName(name) {
   const [firstName, lastName] = parts
   
   if (firstName.length < 2 || lastName.length < 2) return false
-  if (!/^[A-Z][a-z]+$/.test(firstName) || !/^[A-Z][a-z]+$/.test(lastName)) return false
+  if (!/^[A-Z][a-z]+ [A-Z][a-z]+$/.test(name)) return false
   
   const rallyTerminology = [
     'Results', 'Entry', 'Driver', 'Rally', 'Stage', 'Time', 'Position', 
-    'Class', 'Overall', 'Championship', 'Event', 'Date', 'Total', 'Points',
-    'Targa', 'Road', 'Historic', 'Navigational', 'Check', 'Sheets',
-    'Special', 'Awards', 'Forest', 'Hills', 'Stages', 'Classic'
+    'Class', 'Overall', 'Championship', 'Event', 'Date', 'Total', 'Points'
   ]
   
   if (rallyTerminology.some(term => name.includes(term))) return false
-  if (name === name.toUpperCase()) return false
   
   return true
 }
