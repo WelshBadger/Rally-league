@@ -14,6 +14,22 @@ interface CoDriver {
   eventId?: number
 }
 
+interface RallyHistoryEntry {
+  rally: string
+  driver: string
+  points: number
+  eventId?: number
+}
+
+interface AggregatedCoDriver {
+  name: string
+  totalPoints: number
+  totalRallies: number
+  nationality?: string
+  source?: string
+  rallyHistory: RallyHistoryEntry[]
+}
+
 interface ChampionshipData {
   coDrivers: CoDriver[]
   totalCoDrivers: number
@@ -36,25 +52,22 @@ async function getChampionshipData(): Promise<ChampionshipData> {
 export default async function CoDriversPage() {
   const championshipData = await getChampionshipData()
   
-  // AGGREGATE: Co-drivers across all rallies (same co-driver with different drivers)
-  const aggregatedCoDrivers = new Map()
+  const aggregatedCoDrivers = new Map<string, AggregatedCoDriver>()
   
   championshipData.coDrivers.forEach((entry: CoDriver) => {
     const coDriverName = entry.name
     
     if (aggregatedCoDrivers.has(coDriverName)) {
-      // Add to existing co-driver's total
-      const existing = aggregatedCoDrivers.get(coDriverName)
+      const existing = aggregatedCoDrivers.get(coDriverName)!
       existing.totalPoints += (entry.points || 0)
       existing.totalRallies += 1
       existing.rallyHistory.push({
-        rally: entry.rallyEvent,
-        driver: entry.driver,
+        rally: entry.rallyEvent || 'Unknown Rally',
+        driver: entry.driver || 'Unknown Driver',
         points: entry.points || 0,
         eventId: entry.eventId
       })
     } else {
-      // New co-driver entry
       aggregatedCoDrivers.set(coDriverName, {
         name: coDriverName,
         totalPoints: entry.points || 0,
@@ -62,8 +75,8 @@ export default async function CoDriversPage() {
         nationality: entry.nationality,
         source: entry.source,
         rallyHistory: [{
-          rally: entry.rallyEvent,
-          driver: entry.driver,
+          rally: entry.rallyEvent || 'Unknown Rally',
+          driver: entry.driver || 'Unknown Driver',
           points: entry.points || 0,
           eventId: entry.eventId
         }]
@@ -71,7 +84,6 @@ export default async function CoDriversPage() {
     }
   })
   
-  // Convert to array and sort by total points
   const championshipStandings = Array.from(aggregatedCoDrivers.values())
     .sort((a, b) => b.totalPoints - a.totalPoints)
   
@@ -127,7 +139,7 @@ export default async function CoDriversPage() {
           
           {championshipStandings.length > 0 ? (
             <div className="space-y-4">
-              {championshipStandings.map((coDriver, index) => (
+              {championshipStandings.map((coDriver: AggregatedCoDriver, index: number) => (
                 <div 
                   key={coDriver.name}
                   className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-6 border border-gray-600"
@@ -145,7 +157,7 @@ export default async function CoDriversPage() {
                           {coDriver.totalRallies} rally{coDriver.totalRallies !== 1 ? 's' : ''} completed
                         </div>
                         <div className="text-green-400 text-sm">
-                          ✅ Real data from {coDriver.source}
+                          Real data from {coDriver.source}
                         </div>
                       </div>
                     </div>
@@ -159,7 +171,7 @@ export default async function CoDriversPage() {
                   <div className="border-t border-gray-600 pt-4">
                     <div className="text-gray-300 font-semibold mb-2">Rally History:</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {coDriver.rallyHistory.map((rally, rallyIndex) => (
+                      {coDriver.rallyHistory.map((rally: RallyHistoryEntry, rallyIndex: number) => (
                         <div key={rallyIndex} className="bg-gray-700/50 rounded p-3">
                           <div className="text-white text-sm font-semibold">{rally.rally}</div>
                           <div className="text-gray-400 text-xs">with {rally.driver}</div>
@@ -193,8 +205,8 @@ export default async function CoDriversPage() {
           </div>
           <p className="text-gray-300">
             Co-drivers accumulate championship points across ALL rallies with ALL driver partnerships. 
-            Each co-driver's total shows their complete championship performance, 
-            regardless of which drivers they've partnered with across different events.
+            Each co-driver total shows their complete championship performance, 
+            regardless of which drivers they have partnered with across different events.
           </p>
         </div>
       </main>
