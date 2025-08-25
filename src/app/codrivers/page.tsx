@@ -121,7 +121,7 @@ export default async function CoDriversPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">Co-Driver Championship Rankings</h1>
           <p className="text-xl text-gray-300 mb-8">
-            Click any co-driver name below to view their detailed profile and rally history
+            Click any co-driver name below to view their profile
           </p>
           
           <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-6 mb-8">
@@ -157,12 +157,12 @@ export default async function CoDriversPage() {
                         {index + 1}
                       </div>
                       <div>
-                        <Link 
+                        <a 
                           href={`/codrivers/profile/${createSlug(coDriver.name)}`}
-                          className="block text-white font-semibold text-2xl hover:text-blue-300 transition-colors cursor-pointer border-b-2 border-blue-400 hover:border-blue-300 pb-1"
+                          className="text-white font-semibold text-2xl hover:text-blue-300 transition-colors underline decoration-blue-400 decoration-2 cursor-pointer block"
                         >
                           {coDriver.name}
-                        </Link>
+                        </a>
                         <div className="text-gray-400 mt-2">
                           {coDriver.totalRallies} rally{coDriver.totalRallies !== 1 ? 's' : ''} completed
                         </div>
@@ -177,12 +177,12 @@ export default async function CoDriversPage() {
                     <div className="text-right">
                       <div className="text-white font-bold text-3xl">{coDriver.totalPoints}</div>
                       <div className="text-gray-400">championship points</div>
-                      <Link 
+                      <a 
                         href={`/codrivers/profile/${createSlug(coDriver.name)}`}
-                        className="text-blue-400 hover:text-blue-300 text-sm transition-colors border-b border-blue-400 hover:border-blue-300"
+                        className="text-blue-400 hover:text-blue-300 text-sm transition-colors underline"
                       >
-                        view rally breakdown →
-                      </Link>
+                        view profile →
+                      </a>
                     </div>
                   </div>
                 </div>
