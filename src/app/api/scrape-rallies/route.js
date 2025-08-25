@@ -10,27 +10,28 @@ export async function GET() {
     
     // Enhanced rally website targets with more specific URLs
     const rallyWebsites = [
-      {
-        name: "British Rally Championship",
-        url: "https://www.britishrallychampionship.co.uk/results/",
-        type: "championship"
-      },
-      {
-        name: "Rallies.info UK",
-        url: "https://www.rallies.info/",
-        type: "results"
-      },
-      {
-        name: "EWRC Results 2025",
-        url: "https://www.ewrc-results.com/results/2025/",
-        type: "results"
-      },
-      {
-        name: "MSA Results",
-        url: "https://www.motorsportuk.org/championships/",
-        type: "championship"
-      }
-    ]
+  {
+    name: "Nicky Grist Stages 2025 Results",
+    url: "https://www.rallies.info/webentry/2025/nickygrist/",
+    type: "specific_results"
+  },
+  {
+    name: "Jim Clark Rally 2025 Results", 
+    url: "https://www.rallies.info/webentry/2025/jimclark/",
+    type: "specific_results"
+  },
+  {
+    name: "Ulster Rally 2025 Results",
+    url: "https://www.rallies.info/webentry/2025/ulster/",
+    type: "specific_results"
+  },
+  {
+    name: "Grampian Forest Rally Results",
+    url: "https://www.rallies.info/webentry/2025/grampian/",
+    type: "specific_results"
+  }
+]
+
     
     // COMPREHENSIVE co-driver detection patterns - extract ALL real names
     const coDriverPatterns = [
